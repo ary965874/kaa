@@ -9,10 +9,10 @@ export default async function handler(req, res) {
 
     const posts = [];
 
-    $('article').each((_, el) => {
+    $('div.blogbox').each((_, el) => {
       const link = $(el).find('a').attr('href');
       const img = $(el).find('img').attr('src');
-      const title = $(el).find('p').text().trim();
+      const title = $(el).find('h2').text().trim();
 
       if (link && img && title) {
         posts.push({ title, image: img, link });
