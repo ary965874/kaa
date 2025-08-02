@@ -13,18 +13,26 @@ export default async function handler(req, res) {
 
     const title = $('h1').first().text().trim();
 
-    // Fix for image extraction
+    // Image extraction
     const image = $('div.entry-content img').first().attr('src') || $('img.aligncenter').first().attr('src') || null;
 
-    // Stream link detection
-    let streamUrl = null;
+    // Stream URL extraction
+    let streamRawUrl = null;
     $('a').each((_, el) => {
       const text = $(el).text().toLowerCase();
-      if (text.includes('watch') && $(el).attr('href')?.includes('hdstream')) {
-        streamUrl = $(el).attr('href');
-        return false; // Break loop
+      const href = $(el).attr('href');
+      if (text.includes('watch') && href?.includes('hdstream')) {
+        streamRawUrl = href;
+        return false; // Break
       }
     });
+
+    // Convert to embed format
+    let streamUrl = null;
+    if (streamRawUrl && streamRawUrl.includes('/file/')) {
+      const id = streamRawUrl.split('/file/')[1];
+      streamUrl = `https://ary965874.github.io/12365/player.html?video=https://hdstream4u.com/embed/${id}`;
+    }
 
     res.status(200).json({ title, image, streamUrl });
   } catch (err) {
