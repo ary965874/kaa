@@ -9,22 +9,18 @@ export default async function handler(req, res) {
 
     const posts = [];
 
-    $('.img_box').each((i, el) => {
-      const img = $(el).find('img').attr('src');
-      const title = $(el).find('img').attr('alt');
-      const postUrl = $(el).parent('a').attr('href');
+    $('article').each((i, el) => {
+      const postUrl = $(el).find('a').first().attr('href');
+      const image = $(el).find('img').first().attr('src');
+      const title = $(el).find('img').first().attr('alt')?.trim();
 
-      if (img && title && postUrl) {
-        posts.push({
-          title: title.trim(),
-          image: img,
-          url: postUrl
-        });
+      if (postUrl && image && title) {
+        posts.push({ title, image, url: postUrl });
       }
     });
 
     res.status(200).json({ posts });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to scrape home page' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to scrape home page', details: err.message });
   }
 }
