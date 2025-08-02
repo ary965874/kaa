@@ -3,7 +3,6 @@ export const config = {
 };
 
 import cheerio from "cheerio";
-import fetch from "node-fetch";
 
 export default async function handler(req, res) {
   try {
@@ -25,7 +24,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({ posts });
   } catch (err) {
-    console.error("Home scraper error:", err.message);
-    res.status(500).json({ error: "Failed to fetch homepage data", details: err.message });
+    console.error("❌ Home scraper error:", err.message);
+    res.status(500).json({ error: "Failed to fetch homepage", details: err.message });
   }
 }
