@@ -1,3 +1,3 @@
 export default function handler(req, res) {
-  res.send("Welcome to HDHub4U Scraper API");
+  res.status(200).send("✅ HDHub4u API is running.");
 }
