@@ -1,22 +1,26 @@
-const axios = require('axios');
-const cheerio = require('cheerio');
+import fetch from 'node-fetch';
+import * as cheerio from 'cheerio';
 
-module.exports = async (req, res) => {
-    try {
-        const response = await axios.get('https://hdhub4u.build');
-        const $ = cheerio.load(response.data);
-        const posts = [];
+export default async function handler(req, res) {
+  try {
+    const response = await fetch('https://hdhub4u.build/');
+    const html = await response.text();
+    const $ = cheerio.load(html);
 
-        $('.home-post').each((i, el) => {
-            posts.push({
-                title: $(el).find('.title').text().trim(),
-                image: $(el).find('img').attr('src'),
-                url: $(el).find('a').attr('href')
-            });
-        });
+    const posts = [];
 
-        res.json({ posts });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch home data', details: err.message });
-    }
-};
+    $('article').each((_, el) => {
+      const link = $(el).find('a').attr('href');
+      const img = $(el).find('img').attr('src');
+      const title = $(el).find('p').text().trim();
+
+      if (link && img && title) {
+        posts.push({ title, image: img, link });
+      }
+    });
+
+    res.status(200).json({ posts });
+  } catch (err) {
+    res.status(500).json({ error: 'Scraping failed', details: err.message });
+  }
+}
