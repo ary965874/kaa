@@ -11,19 +11,22 @@ export default async function handler(req, res) {
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    const title = $('h1').text().trim();
-    const mainImage = $('.entry-content img').first().attr('src') || null;
+    const title = $('h1').first().text().trim();
 
+    // Fix for image extraction
+    const image = $('div.entry-content img').first().attr('src') || $('img.aligncenter').first().attr('src') || null;
+
+    // Stream link detection
     let streamUrl = null;
-    $('a').each((_, a) => {
-      const text = $(a).text().trim().toLowerCase();
-      if (text.includes('watch') && $(a).attr('href')) {
-        streamUrl = $(a).attr('href');
-        return false; // break loop
+    $('a').each((_, el) => {
+      const text = $(el).text().toLowerCase();
+      if (text.includes('watch') && $(el).attr('href')?.includes('hdstream')) {
+        streamUrl = $(el).attr('href');
+        return false; // Break loop
       }
     });
 
-    res.status(200).json({ title, image: mainImage, streamUrl });
+    res.status(200).json({ title, image, streamUrl });
   } catch (err) {
     res.status(500).json({ error: 'Scraping failed', details: err.message });
   }
