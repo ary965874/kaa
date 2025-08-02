@@ -1,33 +1,22 @@
-import axios from 'axios';
-import cheerio from 'cheerio';
+const axios = require('axios');
+const cheerio = require('cheerio');
 
-export default async function handler(req, res) {
-  try {
-    const { data } = await axios.get("https://hdhub4u.build/");
-    const $ = cheerio.load(data);
-    const posts = [];
+module.exports = async (req, res) => {
+    try {
+        const response = await axios.get('https://hdhub4u.build');
+        const $ = cheerio.load(response.data);
+        const posts = [];
 
-    $('.ml-mask').each((i, el) => {
-      const postUrl = $(el).parent('a').attr('href');
-      const image = $(el).find('img').attr('data-original') || $(el).find('img').attr('src');
-      const title = $(el).find('.ml-title').text().trim();
-
-      if (postUrl && title && image) {
-        posts.push({
-          title,
-          image,
-          url: postUrl.startsWith('http') ? postUrl : `https://hdhub4u.build${postUrl}`
+        $('.home-post').each((i, el) => {
+            posts.push({
+                title: $(el).find('.title').text().trim(),
+                image: $(el).find('img').attr('src'),
+                url: $(el).find('a').attr('href')
+            });
         });
-      }
-    });
 
-    res.status(200).json({
-      success: true,
-      count: posts.length,
-      posts
-    });
-
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-}
+        res.json({ posts });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch home data', details: err.message });
+    }
+};
