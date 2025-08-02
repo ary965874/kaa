@@ -1,34 +1,34 @@
-import axios from 'axios';
-import cheerio from 'cheerio';
+const axios = require('axios');
+const cheerio = require('cheerio');
 
-export default async function handler(req, res) {
-  const { url } = req.query;
-  if (!url) return res.status(400).json({ success: false, message: "Missing 'url' query param." });
+module.exports = async (req, res) => {
+    const { url } = req.query;
 
-  try {
-    const { data } = await axios.get(url);
-    const $ = cheerio.load(data);
+    if (!url) {
+        return res.status(400).json({ error: "Missing ?url= parameter" });
+    }
 
-    const title = $('h1.entry-title').text().trim();
-    const image = $('.entry-content img').first().attr('src');
+    try {
+        const response = await axios.get(url);
+        const $ = cheerio.load(response.data);
 
-    let streamUrl = null;
-    $('.entry-content a').each((i, el) => {
-      const linkText = $(el).text().toLowerCase();
-      if (linkText.includes("watch") || linkText.includes("stream")) {
-        streamUrl = $(el).attr('href');
-        return false;
-      }
-    });
+        const title = $('h1').first().text().trim();
+        const image = $('.post-content img').first().attr('src');
+        let streamUrl = '';
 
-    res.status(200).json({
-      success: true,
-      title,
-      image,
-      streamUrl
-    });
+        $('a').each((i, el) => {
+            if ($(el).text().toLowerCase().includes('watch')) {
+                streamUrl = $(el).attr('href');
+                return false;
+            }
+        });
 
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-}
+        res.json({
+            title,
+            image,
+            streamUrl
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch post data', details: err.message });
+    }
+};
