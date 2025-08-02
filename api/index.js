@@ -1,10 +1,9 @@
-export default async function handler(req, res) {
-  return res.status(200).json({
-    success: true,
-    message: "Welcome to HDHub4u API 👋",
-    endpoints: {
-      home: "/api/home",
-      post: "/api/post?url=<encoded_url>"
-    }
-  });
-}
+module.exports = (req, res) => {
+    res.json({
+        message: "Welcome to HDHub4u API 👋",
+        routes: {
+            home: "/api/home",
+            post: "/api/post?url=POST_URL"
+        }
+    });
+};
