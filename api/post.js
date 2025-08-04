@@ -13,29 +13,26 @@ export default async function handler(req, res) {
 
     const title = $('h1').first().text().trim();
 
-    // Image extraction
+    // Fix for image extraction
     const image = $('div.entry-content img').first().attr('src') || $('img.aligncenter').first().attr('src') || null;
 
-    // Stream URL extraction
-    let streamRawUrl = null;
+    // Stream link detection
+    let streamUrl = null;
     $('a').each((_, el) => {
       const text = $(el).text().toLowerCase();
-      const href = $(el).attr('href');
-      if (text.includes('watch') && href?.includes('hdstream')) {
-        streamRawUrl = href;
-        return false; // Break
+      if (text.includes('watch') && $(el).attr('href')?.includes('hdstream')) {
+        streamUrl = $(el).attr('href');
+        return false; // Break loop
       }
     });
-
-    // Convert to embed format
-    let streamUrl = null;
-    if (streamRawUrl && streamRawUrl.includes('/file/')) {
-      const id = streamRawUrl.split('/file/')[1];
-      streamUrl = `https://ary965874.github.io/12365/player.html?video=https://hdstream4u.com/embed/${id}`;
-    }
 
     res.status(200).json({ title, image, streamUrl });
   } catch (err) {
     res.status(500).json({ error: 'Scraping failed', details: err.message });
   }
 }
+
+
+
+2/2
+
