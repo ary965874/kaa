@@ -1,10 +1,6 @@
 import cheerio from 'cheerio';
 import fetch from 'node-fetch';
 
-/**
- * Example usage:
- * /api/bp?url=https://hubcloud.one/drive/kmj8atzuk8xzsum
- */
 export default async function handler(req, res) {
   const { url } = req.query;
 
@@ -25,7 +21,6 @@ export default async function handler(req, res) {
 
     const html = await response.text();
     const $ = cheerio.load(html);
-
     const downloadBtn = $('a#download').attr('href');
 
     if (downloadBtn) {
@@ -34,6 +29,7 @@ export default async function handler(req, res) {
     } else {
       return res.status(404).json({ error: '❌ Download link not found.' });
     }
+
   } catch (err) {
     return res.status(500).json({ error: '❌ Exception: ' + err.message });
   }
