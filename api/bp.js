@@ -4,73 +4,61 @@ import * as cheerio from 'cheerio';
 export default async function handler(req, res) {
   const { url } = req.query;
 
-  if (!url || !url.includes('hubdrive.space/file/')) {
+  if (!url || !url.includes('hubcloud.one/drive/')) {
     return res.status(400).json({
       step: 'validation',
       status: 'error',
-      message: 'Invalid or missing ?url= parameter. Must include hubdrive.space/file/',
+      message: 'Missing or invalid ?url= parameter. Must be a hubcloud.one/drive/ link.',
     });
   }
 
-  try {
-    const logs = [];
-    logs.push({ step: 'start', message: 'Starting bypass for: ' + url });
+  const logs = [];
 
-    // Step 1: Fetch HubDrive page
+  try {
+    logs.push({ step: 'start', message: 'Starting with HubCloud page: ' + url });
+
+    // Step 1: Fetch the hubcloud.one/drive page
     const r1 = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
     const html1 = await r1.text();
     const $ = cheerio.load(html1);
 
-    // Step 2: Find HubCloud drive link
-    const hubcloudUrl = $('a.btn-success1[href*="hubcloud.one/drive/"]').attr('href');
-    if (!hubcloudUrl) {
-      logs.push({ step: 'hubcloud', status: 'error', message: 'HubCloud drive link not found.' });
-      return res.status(404).json({ logs });
+    // Step 2: Find generator link (#download)
+    const generatorUrl = $('a#download').attr('href');
+    if (!generatorUrl) {
+      logs.push({ step: 'download-button', status: 'error', message: 'No #download link found on HubCloud page.' });
+      return res.status(404).json({ logs, hubcloudUrl: url });
     }
 
-    logs.push({ step: 'hubcloud', status: 'success', message: 'Found HubCloud link.', hubcloudUrl });
+    logs.push({ step: 'download-button', status: 'success', message: 'Found generator link.', generatorUrl });
 
-    // Step 3: Fetch HubCloud drive page
-    const r2 = await fetch(hubcloudUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    // Step 3: Fetch generator.php page
+    const r2 = await fetch(generatorUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
     const html2 = await r2.text();
     const $$ = cheerio.load(html2);
 
-    // Step 4: Get generator.php URL
-    const generatorUrl = $$('a#download').attr('href');
-    if (!generatorUrl) {
-      logs.push({ step: 'generator', status: 'error', message: 'Download generator link (#download) not found.' });
-      return res.status(404).json({ logs, hubcloudUrl });
-    }
-
-    logs.push({ step: 'generator', status: 'success', message: 'Found download generator link.', generatorUrl });
-
-    // Step 5: Fetch generator page
-    const r3 = await fetch(generatorUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-    const html3 = await r3.text();
-    const $$$ = cheerio.load(html3);
-
-    // Step 6: Final FSL download link
-    const finalUrl = $$$('a#fsl').attr('href');
+    // Step 4: Find final .mkv link with id="fsl"
+    const finalUrl = $$('a#fsl').attr('href');
     if (!finalUrl) {
-      logs.push({
-        step: 'final',
-        status: 'warning',
-        message: 'FSL link not found. Using generator.php URL as fallback.',
-        fallback: generatorUrl,
-      });
-      return res.status(200).json({ logs, input: url, final: null, fallback: generatorUrl });
+      logs.push({ step: 'fsl-link', status: 'error', message: 'FSL download link (#fsl) not found on generator page.' });
+      return res.status(404).json({ logs, generatorUrl });
     }
 
-    logs.push({ step: 'final', status: 'success', message: 'Found final FSL download link.', finalUrl });
+    logs.push({ step: 'fsl-link', status: 'success', message: 'Found final download link.', finalUrl });
 
-    // Success
-    return res.status(200).json({ logs, input: url, final: finalUrl, fallback: null });
+    // Success response
+    return res.status(200).json({
+      input: url,
+      generatorUrl,
+      finalUrl,
+      logs,
+    });
   } catch (err) {
     return res.status(500).json({
       step: 'exception',
       status: 'error',
-      message: 'Unhandled exception',
+      message: 'Unhandled exception occurred.',
       error: err.message,
+      logs,
     });
   }
 }
