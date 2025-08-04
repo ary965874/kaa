@@ -1,7 +1,10 @@
-import cheerio from 'cheerio';
-import fetch from 'node-fetch';
+const cheerio = require('cheerio');
+const fetch = require('node-fetch');
 
-export default async function handler(req, res) {
+/**
+ * GET /api/bp?url=https://hubcloud.one/drive/kmj8atzuk8xzsum
+ */
+module.exports = async (req, res) => {
   const { url } = req.query;
 
   if (!url || !url.startsWith('http')) {
@@ -31,6 +34,6 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: '❌ Download link not found.' });
     }
   } catch (err) {
-    return res.status(500).json({ error: '❌ Error: ' + err.message });
+    return res.status(500).json({ error: '❌ Exception: ' + err.message });
   }
-}
+};
