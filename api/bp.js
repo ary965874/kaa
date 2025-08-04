@@ -1,7 +1,7 @@
-import cheerio from 'cheerio';
-import fetch from 'node-fetch';
+const cheerio = require('cheerio');
+const fetch = require('node-fetch');
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   const { url } = req.query;
 
   if (!url || !url.startsWith('http')) {
@@ -21,6 +21,7 @@ export default async function handler(req, res) {
 
     const html = await response.text();
     const $ = cheerio.load(html);
+
     const downloadBtn = $('a#download').attr('href');
 
     if (downloadBtn) {
@@ -29,8 +30,7 @@ export default async function handler(req, res) {
     } else {
       return res.status(404).json({ error: '❌ Download link not found.' });
     }
-
   } catch (err) {
     return res.status(500).json({ error: '❌ Exception: ' + err.message });
   }
-}
+};
