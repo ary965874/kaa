@@ -1,10 +1,11 @@
-const cheerio = require('cheerio');
-const fetch = require('node-fetch');
+import cheerio from 'cheerio';
+import fetch from 'node-fetch';
 
 /**
- * GET /api/bp?url=https://hubcloud.one/drive/kmj8atzuk8xzsum
+ * Example usage:
+ * /api/bp?url=https://hubcloud.one/drive/kmj8atzuk8xzsum
  */
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   const { url } = req.query;
 
   if (!url || !url.startsWith('http')) {
@@ -36,4 +37,4 @@ module.exports = async (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: '❌ Exception: ' + err.message });
   }
-};
+}
