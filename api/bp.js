@@ -21,7 +21,6 @@ module.exports = async (req, res) => {
 
     const html = await response.text();
     const $ = cheerio.load(html);
-
     const downloadBtn = $('a#download').attr('href');
 
     if (downloadBtn) {
