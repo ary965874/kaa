@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: 'Missing url parameter' });
 
-  const API_KEY = '7d54e975abce96fe2fc4ee11cd28cf64';
+  const API_KEY = '57e9758e150311f9e07c9923e5731678';
   const proxyUrl = `http://api.scraperapi.com?api_key=${API_KEY}&url=${encodeURIComponent(url)}`;
 
   try {
